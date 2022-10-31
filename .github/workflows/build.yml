@@ -1,0 +1,44 @@
+name: buildx
+
+on:
+  workflow_dispatch:
+  #push:
+    #branches: 
+      #- main
+    #paths:
+      #- "**.sh"
+      #- "!.github/workflows/*.yml"
+  #schedule:
+    #- cron: "0 18 * * 4"
+
+jobs:
+  buildx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: install buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to ghcr.io
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: build and push the image
+        if: startsWith(github.ref, 'refs/heads/main') && github.actor == 'tmkon'
+        run: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx ls
+          docker buildx build --push \
+            --tag tmkon/KM-xr4y:latest .
+          docker buildx build --push \
+            --tag ghcr.io/tmkon/KM-xr4y:latest .
