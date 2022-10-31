@@ -1,0 +1,39 @@
+name: request
+
+on:
+  schedule:
+    - cron: "0 */8 * * *"
+  workflow_dispatch:
+
+jobs:
+  autorequest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+        
+      - name: Run a multi-line script
+        run: |
+          echo "👊👊👊👊👊👊action begin👊👊👊👊👊👊"
+          TZ='Asia/Colombo'; export TZ
+          
+          if curl -I https://km-xr4y-prod-kmxray-u4f4oh.mo1.mogenius.io/ -o /dev/null; then
+            echo ------------success excute curl TGXRAY-MOGENIUS!!!!!!!------------
+          else
+            echo "TGXRAY-MOGENIUS Fail!!!"
+          fi
+          
+      - name: request
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git remote set-url origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git pull --rebase
+          git commit --allow-empty -m "auto-request"
+          git push
+          
+          sleep 1
+          echo -e "\033[33;40m  ($0) ${TIME}: this shell script execution duration: ${SECONDS}s  \033[0m"
+          echo "😊😊😊😊😊😊success excute shell😊😊😊😊😊😊"
+
+          
